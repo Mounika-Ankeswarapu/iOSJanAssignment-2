@@ -186,6 +186,68 @@
             },
             
         ]
+    },
+    {
+        "image":"Fruits",
+        "name":"Fruits",
+        "list":[
+            {
+                "image":"Apple",
+                "name":"Apple"
+            },
+            {
+                "image":"PineApple",
+                "name":"PineApple"
+            },
+            {
+                "image":"banana",
+                "name":"Banana"
+            },
+            {
+                "image":"cherry",
+                "name":"Cherry"
+            },
+            {
+                "image":"grapes",
+                "name":"Grapes"
+            },
+            {
+                "image":"oranges",
+                "name":"Oranges"
+            },
+            {
+                "image":"strawberry",
+                "name":"Strawberry"
+            },
+            {
+                "image":"Apple",
+                "name":"Apple"
+            },
+            {
+                "image":"PineApple",
+                "name":"PineApple"
+            },
+            {
+                "image":"banana",
+                "name":"Banana"
+            },
+            {
+                "image":"cherry",
+                "name":"Cherry"
+            },
+            {
+                "image":"grapes",
+                "name":"Grapes"
+            },
+            {
+                "image":"oranges",
+                "name":"Oranges"
+            },
+            {
+                "image":"strawberry",
+                "name":"Strawberry"
+            }
+        ]
     }
 ]
 

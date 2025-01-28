@@ -8,7 +8,7 @@
 import UIKit
 
 class CarouselVC: UIViewController {
-
+    
     @IBOutlet weak var carouselTableView: UITableView!
     
     var carouselItems:[CarouselStruct]?
@@ -19,19 +19,25 @@ class CarouselVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
         
+        setupData()
+        setupTableView()
+        setupTableHeaderView()
+    }
+    
+    private func setupData() {
         guard let jsonData = loadJson(filename: "Carousel") else { return }
         self.carouselItems = jsonData
         self.allItems = jsonData.first?.list
         self.filteredItems = jsonData.first?.list
-        
+    }
+    
+    private func setupTableView() {
         self.carouselTableView.delegate = self
         self.carouselTableView.dataSource = self
         self.carouselTableView.register(UINib(nibName: "EachRowTVCell", bundle: nil), forCellReuseIdentifier: "EachRowTVCell")
-        setupTableHeaderView()
     }
+    
     
     func loadJson(filename fileName: String) -> [CarouselStruct]? {
         guard let url = Bundle(for: Self.self).url(forResource: fileName, withExtension: "json") else { return nil }
@@ -42,22 +48,28 @@ class CarouselVC: UIViewController {
             let jsonData = try decoder.decode([CarouselStruct].self, from: data)
             return jsonData
         } catch {
-            //print("error:\(error)")
+            print("Error loading JSON: \(error)")
             return nil
         }
     }
     
-
-    func setupTableHeaderView() {
-        // Create a UIView to hold the header
+    
+    private func setupTableHeaderView() {
+        
+        let headerView = createHeaderView()
+        carouselTableView.tableHeaderView = headerView
+        
+    }
+    
+    private func createHeaderView() -> UIView {
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 230))
-       
+        
         // Configure the carousel collection view
         let carouselLayout = UICollectionViewFlowLayout()
         carouselLayout.scrollDirection = .horizontal
         carouselLayout.itemSize = CGSize(width: view.frame.width, height: 200)
         carouselLayout.minimumLineSpacing = 0
-
+        
         let carouselCollectionView = UICollectionView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 200), collectionViewLayout: carouselLayout)
         carouselCollectionView.isPagingEnabled = true
         carouselCollectionView.showsHorizontalScrollIndicator = false
@@ -65,26 +77,27 @@ class CarouselVC: UIViewController {
         carouselCollectionView.dataSource = self
         carouselCollectionView.register(UINib(nibName: "HeadingImageCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "HeadingImageCollectionViewCell")
         headerView.addSubview(carouselCollectionView)
-
+        
         // Add Page Control
+        setupPageControl(in: headerView)
+        
+        return headerView
+    }
+    
+    private func setupPageControl(in headerView: UIView) {
         pageControl = UIPageControl(frame: CGRect(x: 0, y: 210, width: view.frame.width, height: 30))
         pageControl.isUserInteractionEnabled = false
         pageControl.numberOfPages = carouselItems?.count ?? 0
         pageControl.currentPage = 0
         pageControl.tintColor = .darkGray
-        pageControl.currentPageIndicatorTintColor = .systemBlue // Color for the active page dot
+        pageControl.currentPageIndicatorTintColor = .systemBlue
         pageControl.pageIndicatorTintColor = UIColor.lightGray.withAlphaComponent(0.6)
         pageControl.subviews.forEach { dot in
-            dot.transform = CGAffineTransform(scaleX: 1.5, y: 1.5) // Scale up the dots (1.5x size)
+            dot.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
         }
         headerView.addSubview(pageControl)
-
-        // Set header view to the table view
-        carouselTableView.tableHeaderView = headerView
     }
-
-    // UICollectionView Delegate Method
-
+    
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         // Check if the scrollView is the carousel collection view
         if let carouselCollectionView = scrollView as? UICollectionView {
@@ -98,10 +111,11 @@ class CarouselVC: UIViewController {
             }
         }
     }
-
 }
 
-extension CarouselVC: UICollectionViewDelegate,UICollectionViewDataSource, UICollectionViewDelegateFlowLayout{
+// MARK: - UICollectionView Extensions
+
+extension CarouselVC: UICollectionViewDelegate,UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.carouselItems?.count ?? 0
     }
@@ -114,20 +128,9 @@ extension CarouselVC: UICollectionViewDelegate,UICollectionViewDataSource, UICol
         }
         return cell
     }
-    
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-//        if carouselItems?.count == 1 {
-//            let cellWidth = collectionView.frame.size.width - 10
-//            let cellHeight: CGFloat = collectionView.frame.size.height
-//            return CGSize(width: cellWidth, height: cellHeight)
-//        }else {
-//            let cellWidth = collectionView.frame.size.width - 50.0
-//            let cellHeight: CGFloat = collectionView.frame.size.height
-//            return CGSize(width: cellWidth, height: cellHeight)
-//        }
-//    }
-            
 }
+
+// MARK: - UITableView Extensions
 
 extension CarouselVC: UITableViewDelegate, UITableViewDataSource{
     
@@ -149,24 +152,20 @@ extension CarouselVC: UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
         // Create a UIView to act as the header
         let sectionHeader = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 50))
-        sectionHeader.backgroundColor = .white
-
-        // Add a UISearchBar to the section header
-        searchBar = UISearchBar(frame: CGRect(x: 0, y: 0, width: sectionHeader.frame.width, height: 50))
-        searchBar.placeholder = "Search"
-        searchBar.delegate = self
-        sectionHeader.addSubview(searchBar)
-
+        sectionHeader.addSubview(createSearchBar())
         return sectionHeader
     }
-
+    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 70.0
     }
-
+    
 }
+
+// MARK: - UISearchBar Extensions
 
 extension CarouselVC: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
@@ -177,6 +176,14 @@ extension CarouselVC: UISearchBarDelegate {
         }
         self.carouselTableView.reloadData()
     }
+    
+    private func createSearchBar() -> UISearchBar {
+        let searchBar = UISearchBar(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 50))
+        searchBar.placeholder = "Search"
+        searchBar.delegate = self
+        return searchBar
+    }
 }
+
 
 
